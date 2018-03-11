@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.0;net45</TargetFrameworks>
+    <RootNamespace>LiteMessage</RootNamespace>
+  </PropertyGroup>
+
+</Project>
