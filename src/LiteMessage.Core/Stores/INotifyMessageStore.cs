@@ -13,7 +13,8 @@ namespace LiteMessage.Stores
         void Delete(int id);
 
         IEnumerable<Message> List(string search, int pageIndex, int pageSize);
-        int Count(string search);
+        int Count(string search = null);
+
     }
 
 }

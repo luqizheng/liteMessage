@@ -6,8 +6,7 @@ namespace LiteMessage
     {
         public Message()
         {
-            CreateTime = DateTime.Now;
-            ModifyTime = DateTime.Now;
+
         }
         /// <summary>
         /// 
@@ -30,6 +29,15 @@ namespace LiteMessage
         /// 
         /// </summary>
         public DateTimeOffset ModifyTime { get; set; }
+        /// <summary>
+        /// 发布时间
+        /// </summary>
+        public DateTimeOffset PublishTime { get; set; }
+        /// <summary>
+        /// 读取状态
+        /// </summary>
+        public ReadStatus ReadStatus { get; set; }
+
 
 
     }

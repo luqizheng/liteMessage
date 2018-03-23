@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using LiteMessage.Dto;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -59,7 +60,23 @@ namespace LiteMessage.Client
         /// </summary>
         /// <param name="read"></param>
         /// <param name="user"></param>
-        public void Mark(bool read, string user) { }
+
+        public void Mark(MarkReadDto dto, int messageId)
+        {
+
+            var client = new HttpClient();
+            var url = host + "Mark/" + messageId;
+            client.DefaultRequestHeaders.Add("signature", Md5(url + appKey));
+            var httpContent = GetContent(client, dto);
+            var response = client.PutAsync(url, httpContent).Result;
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return;
+            }
+
+            throw new Exception("Mark error " + response.Content.ReadAsStringAsync().Result);
+
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -119,6 +136,26 @@ namespace LiteMessage.Client
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public int CountNew(string userId)
+        {
+            var client = new HttpClient();
+            var url = host + $"Count/{userId}/unread";
+
+            client.DefaultRequestHeaders.Add("signature", Md5(url + appKey));
+            var response = client.GetAsync(url).Result;
+            var json = response.Content.ReadAsStringAsync().Result;
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return JsonConvert.DeserializeObject<int>(json);
+            }
+
+            throw new Exception("get error " + json);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="search"></param>
         /// <returns></returns>
         public int Count(string search = null)
@@ -143,10 +180,10 @@ namespace LiteMessage.Client
         /// <param name="size"></param>
         /// <param name="searchKey"></param>
         /// <returns></returns>
-        public IEnumerable<Message> List(int page, int size, string searchKey = null)
+        public IEnumerable<Message> List(int page, int size, string userId = null)
         {
             var client = new HttpClient();
-            var url = host + "list?page=" + page + "&pageSize=" + size + "&searchKey=" + searchKey;
+            var url = host + "list?page=" + page + "&pageSize=" + size + "&userId=" + userId;
             client.DefaultRequestHeaders.Add("signature", Md5(url + appKey));
             var response = client.GetAsync(url).Result;
             var json = response.Content.ReadAsStringAsync().Result;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LiteDB;
 using LiteMessage.Stores;
 using LiteMessage.Stores.LiteDb;
 using LiteMessage.Web.Controllers;
@@ -26,16 +27,10 @@ namespace LiteMessage.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(typeof(INotifyMessageStore), sp =>
-            {
+            services.AddSingleton(sp => new LiteDatabase(Configuration["dbPath"] ?? "messageDb.db"));
+            services.AddSingleton(typeof(INotifyMessageStore), typeof(NotifyMessageStore));
 
-                var setting = new LiteMessageSetting()
-                {
-                    StorePath = Configuration["dbPath"] ?? "messageDb.db"
-                };
-
-                return new NotifyMessageStore(setting);
-            });
+            services.AddSingleton(typeof(IReadStatusStore), typeof(ReadStatusStore));
             services.AddMvc();
         }
 

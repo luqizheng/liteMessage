@@ -9,22 +9,32 @@ namespace LiteMessage.Stores.LiteDb
     }
     public class NotifyMessageStore : INotifyMessageStore
     {
-        private readonly LiteMessageSetting setting;
-        
-        public NotifyMessageStore(LiteMessageSetting setting)
+        static NotifyMessageStore()
         {
-            this.setting = setting;
+            var mapper = BsonMapper.Global;
+
+            mapper.Entity<Message>()
+
+                .Ignore(x => x.ReadStatus);// ignore this property (do not store)
+
+
+        }
+
+        private readonly LiteDatabase db;
+
+        public NotifyMessageStore(LiteDatabase setting)
+        {
+            this.db = setting;
         }
         public void Delete(int id)
         {
-            using (var db = new LiteDatabase(setting.StorePath))
-            {
-                CreateCollection(db);
-                // Get customer collection
-                var col = db.GetCollection<Message>();
-                col.Delete(new BsonValue(id));
 
-            }
+            CreateCollection(db);
+            // Get customer collection
+            var col = db.GetCollection<Message>();
+            col.Delete(new BsonValue(id));
+
+
         }
 
         private void CreateCollection(LiteDatabase db)
@@ -38,73 +48,69 @@ namespace LiteMessage.Stores.LiteDb
 
         public void Add(Message order)
         {
-            using (var db = new LiteDatabase(setting.StorePath))
-            {
-                order.CreateTime = DateTime.Now;
-                CreateCollection(db);
-                // Get customer collection
-                var col = db.GetCollection<Message>();
-                var bs = col.Insert(order);
-                order.Id = bs.AsInt32;
-            }
+
+            order.CreateTime = DateTime.Now;
+            CreateCollection(db);
+            // Get customer collection
+            var col = db.GetCollection<Message>();
+            var bs = col.Insert(order);
+            order.Id = bs.AsInt32;
+
         }
 
         public void Update(Message order)
         {
-            using (var db = new LiteDatabase((setting.StorePath)))
-            {
-                CreateCollection(db);
-                order.ModifyTime = DateTimeOffset.Now;
-                // Get customer collection
-                var col = db.GetCollection<Message>();
-                col.Update(order);
-            }
+
+            CreateCollection(db);
+            order.ModifyTime = DateTimeOffset.Now;
+            // Get customer collection
+            var col = db.GetCollection<Message>();
+            col.Update(order);
         }
+
 
         public IEnumerable<Message> List(string search, int pageIndex, int pageSize)
         {
 
-            using (var db = new LiteDatabase((setting.StorePath)))
-            {
-                CreateCollection(db);
-                // Get customer collection
-                var col = db.GetCollection<Message>();
-                var query = Query.All("ModifyTime", Query.Descending);
 
-                if (!string.IsNullOrEmpty(search))
-                {
-                    query = Query.And(
-                        Query.Or(Query.Contains("Subject", search), Query.Contains("Content", search)),
-                        query
-                        );
-                }
-                var result = col.Find(query, pageIndex * pageSize, pageSize);
-                return result ?? new List<Message>();
+            // Get customer collection
+            var col = db.GetCollection<Message>();
+            var query = Query.All("PublishTime", Query.Descending);
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = Query.And(
+                    Query.Or(Query.Contains("Subject", search), Query.Contains("Content", search)),
+                    query
+                    );
             }
+            var result = col.Find(query, pageIndex * pageSize, pageSize);
+            return result ?? new List<Message>();
+
         }
 
         public Message Get(int id)
         {
-            using (var db = new LiteDatabase((setting.StorePath)))
-            {
-                CreateCollection(db);
-                // Get customer collection
-                var col = db.GetCollection<Message>();
-                return col.FindById(new BsonValue(id));
-            }
+
+
+            // Get customer collection
+            var col = db.GetCollection<Message>();
+            return col.FindById(new BsonValue(id));
+
         }
 
-        public int Count(string search)
+        public int Count(string search = null)
         {
-            using (var db = new LiteDatabase((setting.StorePath)))
-            {
-                CreateCollection(db);
-                // Get customer collection
-                var col = db.GetCollection<Message>();
-                if (!string.IsNullOrEmpty(search))
-                    return col.Count(f => (f.Content.Contains(search) || f.Subject.Contains(search)));
-                return col.Count(f => true);
-            }
+
+
+            // Get customer collection
+            var col = db.GetCollection<Message>();
+            if (!string.IsNullOrEmpty(search))
+                return col.Count(f => (f.Content.Contains(search) || f.Subject.Contains(search)));
+            return col.Count();
+
         }
+
+
     }
 }

@@ -21,7 +21,13 @@ namespace XUnitTestProject1
             {
 
                 Content = "content",
-                Subject = "subject"
+                Subject = "subject",
+                ReadStatus=new LiteMessage.ReadStatus()
+                {
+                    IsDeleted=false,
+                    MessageId=1,
+                    UserId="kjkj",
+                }
             };
 
 
